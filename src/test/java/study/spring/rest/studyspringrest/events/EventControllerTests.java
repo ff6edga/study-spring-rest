@@ -38,6 +38,37 @@ public class EventControllerTests {
 
 	@Test
 	public void createEvent() throws Exception {
+		EventDto eventDto = EventDto.builder()
+				.name("Spring")
+				.description("REST API Development with Spring")
+				.beginEnrollmentDateTime(LocalDateTime.of(2019, 12, 8, 2, 2))
+				.closeEnrollmentDateTime(LocalDateTime.of(2019, 12, 9, 2, 2))
+				.beginEventDateTime(LocalDateTime.of(2019, 12, 13, 2, 2))
+				.endEventDateTime(LocalDateTime.of(2019, 12, 14, 2, 2))
+				.basePrice(100)
+				.maxPrice(200)
+				.limitOfEnrollment(100)
+				.location("강남역 D2 스타텁 팩토리")
+				.build();
+
+		mockMvc.perform(post("/api/events/")
+					.contentType(MediaType.APPLICATION_JSON)
+					.accept(MediaTypes.HAL_JSON)
+					.content(objectMapper.writeValueAsString(eventDto)))
+				//print()를 통해 볼 수 있는 모든 내용을 andExpect로 확인 가능 합니다.
+				.andDo(print())
+				.andExpect(status().isCreated()) // == status().is(201)
+				.andExpect(jsonPath("id").exists())
+				.andExpect(header().exists(HttpHeaders.LOCATION))
+				.andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE))
+				.andExpect(jsonPath("id").value(Matchers.not(100)))
+				.andExpect(jsonPath("free").value(Matchers.not(true)))
+				.andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()));
+
+	}
+
+	@Test
+	public void createEvent_BadRequest() throws Exception {
 		Event event = Event.builder()
 				.id(100)
 				.name("Spring")
@@ -61,13 +92,7 @@ public class EventControllerTests {
 					.content(objectMapper.writeValueAsString(event)))
 				//print()를 통해 볼 수 있는 모든 내용을 andExpect로 확인 가능 합니다.
 				.andDo(print())
-				.andExpect(status().isCreated()) // == status().is(201)
-				.andExpect(jsonPath("id").exists())
-				.andExpect(header().exists(HttpHeaders.LOCATION))
-				.andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE))
-				.andExpect(jsonPath("id").value(Matchers.not(100)))
-				.andExpect(jsonPath("free").value(Matchers.not(true)))
-				.andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()));
+				.andExpect(status().isBadRequest());
 
 	}
  }
