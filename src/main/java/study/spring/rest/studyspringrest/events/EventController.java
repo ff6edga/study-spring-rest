@@ -2,7 +2,10 @@ package study.spring.rest.studyspringrest.events;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.server.mvc.ControllerLinkBuilder;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.Collections;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -48,8 +52,13 @@ public class EventController {
 		event.update();
 		Event newEvent = this.eventRepository.save(event);
 
-		URI createdUri = linkTo(EventController.class).slash(newEvent.getId()).toUri();
-		event.setId(10);
-		return ResponseEntity.created(createdUri).body(event);
+		WebMvcLinkBuilder selfLinkBuilder = linkTo(EventController.class).slash(newEvent.getId());
+		URI createdUri = selfLinkBuilder.toUri();
+		EventResource eventResource = new EventResource(newEvent);
+		eventResource.add(linkTo(EventController.class).withRel("query-events"));
+		//self 링크는 항상 필요하기 때문에 EventResource에서 추가하는 것으로 변경 하였다.
+		//self, update는 링크는 같기는 하지만 Relation만 다르다. (수정할 떄는 PUT 메소드로 들어온다.)
+		eventResource.add(selfLinkBuilder.withRel("update-event"));
+		return ResponseEntity.created(createdUri).body(eventResource);
 	}
 }
