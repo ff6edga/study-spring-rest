@@ -1,6 +1,7 @@
 package study.spring.rest.studyspringrest.events;
 
 import lombok.*;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -32,4 +33,20 @@ public class Event {
 	@Enumerated(EnumType.STRING)
 	private EventStatus eventStatus = EventStatus.DRAFT;
 
+	public void update() {
+		// Update free
+		if (this.basePrice == 0 && this.maxPrice == 0) {
+			this.free = true;
+		} else {
+			this.free = false;
+		}
+
+		//update offline
+		// if (this.location == null || this.location.isBlank()) {
+		if (StringUtils.isEmpty(this.location)) {
+			this.offline = false;
+		} else {
+			this.offline = true;
+		}
+	}
 }

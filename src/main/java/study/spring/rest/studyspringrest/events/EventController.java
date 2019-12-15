@@ -43,7 +43,11 @@ public class EventController {
 			return ResponseEntity.badRequest().body(errors);
 
 		Event event = modelMapper.map(eventDto, Event.class);
+
+		//Event Service가 있다면 위임하는 것이 더 좋다.
+		event.update();
 		Event newEvent = this.eventRepository.save(event);
+
 		URI createdUri = linkTo(EventController.class).slash(newEvent.getId()).toUri();
 		event.setId(10);
 		return ResponseEntity.created(createdUri).body(event);
