@@ -91,7 +91,6 @@ public class EventControllerTests {
 				//print()를 통해 볼 수 있는 모든 내용을 andExpect로 확인 가능 합니다.
 				.andDo(print())
 				.andExpect(status().isBadRequest());
-
 	}
 
 	@Test
@@ -128,6 +127,12 @@ public class EventControllerTests {
 				.accept(MediaTypes.HAL_JSON)
 				.content(objectMapper.writeValueAsString(eventDto)))
 				.andDo(print())
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$[0].objectName").exists())
+//				.andExpect(jsonPath("$[0].field").exists())
+				.andExpect(jsonPath("$[0].defaultMessage").exists())
+				.andExpect(jsonPath("$[0].code").exists());
+//				.andExpect(jsonPath("$[0].rejectedValue").exists());
+
 	}
  }
