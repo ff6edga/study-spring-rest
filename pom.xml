@@ -90,7 +90,10 @@
                 <executions>
                     <execution>
                         <id>generate-docs</id>
+                        <!--아래의 phase 단계에서-->
                         <phase>prepare-package</phase>
+                        <!--아래 액션(기능)을 진행하라.-->
+                        <!--기본적으로 asciidoc dir에 있는 모든 문서들 html로 만들어 준다.-->
                         <goals>
                             <goal>process-asciidoc</goal>
                         </goals>
@@ -107,6 +110,33 @@
                         <version>${spring-restdocs.version}</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.7</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <!--목적지-->
+                            <outputDirectory>
+                                ${project.build.outputDirectory}/static/docs
+                            </outputDirectory>
+                            <resources>
+                                <!--출발지-->
+                                <resource>
+                                    <directory>
+                                        ${project.build.directory}/generated-docs
+                                    </directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
