@@ -5,22 +5,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import study.spring.rest.studyspringrest.common.ErrorsResource;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.Optional;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -42,6 +38,15 @@ public class EventController {
 		this.eventRepository = eventRepository;
 	}
 
+	@GetMapping("/{id}")
+	public ResponseEntity getEvent(@PathVariable Integer id) {
+		Optional<Event> optionalEvent = eventRepository.findById(id);
+		if (optionalEvent.isEmpty())
+			return ResponseEntity.notFound().build();
+		EventResource eventResource = new EventResource(optionalEvent.get());
+		eventResource.add(new Link("/docs/index.html#resource-get-event").withRel("profile"));
+		return ResponseEntity.ok(eventResource);
+	}
 	@GetMapping
 	public ResponseEntity queryEvents(Pageable pageable, PagedResourcesAssembler<Event> assembler) {
 		Page<Event> page = this.eventRepository.findAll(pageable);
