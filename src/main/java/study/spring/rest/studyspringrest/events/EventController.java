@@ -13,6 +13,7 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import study.spring.rest.studyspringrest.common.ErrorsResource;
 
 import javax.validation.Valid;
 import java.net.URI;
@@ -40,13 +41,14 @@ public class EventController {
 
 	@PostMapping
 	public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors) {
-		if (errors.hasErrors())
-			return ResponseEntity.badRequest().body(errors);
+		if (errors.hasErrors()) {
+			return getBadRequest(errors);
+		}
 		eventValidator.validate(eventDto, errors);
 
-		if (errors.hasErrors())
-			return ResponseEntity.badRequest().body(errors);
-
+		if (errors.hasErrors()) {
+			return getBadRequest(errors);
+		}
 		Event event = modelMapper.map(eventDto, Event.class);
 
 		//Event Service가 있다면 위임하는 것이 더 좋다.
@@ -62,5 +64,9 @@ public class EventController {
 		eventResource.add(selfLinkBuilder.withRel("update-event"));
 		eventResource.add(new Link("docs/index.html#resources-events-create").withRel("profile"));
 		return ResponseEntity.created(createdUri).body(eventResource);
+	}
+
+	private ResponseEntity getBadRequest(Errors errors) {
+		return ResponseEntity.badRequest().body(new ErrorsResource(errors));
 	}
 }
