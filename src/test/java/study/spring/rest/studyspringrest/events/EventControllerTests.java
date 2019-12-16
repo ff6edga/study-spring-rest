@@ -18,6 +18,7 @@ import study.spring.rest.studyspringrest.common.RestDocsConfiguration;
 import study.spring.rest.studyspringrest.common.TestDescription;
 
 import java.time.LocalDateTime;
+import java.util.stream.IntStream;
 
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
@@ -27,6 +28,7 @@ import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.li
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -43,6 +45,9 @@ public class EventControllerTests {
 
 	@Autowired
 	ObjectMapper objectMapper;
+
+	@Autowired
+	EventRepository eventRepository;
 
 	@Test
 	// 주석보다 나은데?
@@ -204,4 +209,34 @@ public class EventControllerTests {
 				.andExpect(jsonPath("_links.index").exists());
 
 	}
- }
+
+	@Test
+	@TestDescription("30개의 이벤트를 10개씩 두번째 페이지 조회하기")
+	public void queryEvents() throws Exception {
+		//Given
+		IntStream.range(0, 30).forEach(this::generateEvent);
+
+		//When
+		mockMvc.perform(get("/api/events/")
+							.param("page","1")
+							.param("size","10")
+							.param("sort", "name,DESC"))
+				.andDo(print())
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("page").exists())
+				.andExpect(jsonPath("_embedded.eventList[0]._links.self").exists())
+				.andExpect(jsonPath("_links.self").exists())
+				.andExpect(jsonPath("_links.profile").exists())
+				// Page 관련 링크 내용 설명, Request / Response 관련 내용들을 아래 나열한다.
+				.andDo(document("query-events"));
+		//Then
+	}
+
+	private void generateEvent(int i) {
+		Event event = Event.builder()
+				.name("event " + i)
+				.build();
+
+		eventRepository.save(event);
+	}
+}

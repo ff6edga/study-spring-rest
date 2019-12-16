@@ -2,14 +2,18 @@ package study.spring.rest.studyspringrest.events;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.CollectionModel;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.server.mvc.ControllerLinkBuilder;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +21,6 @@ import study.spring.rest.studyspringrest.common.ErrorsResource;
 
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.Collections;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
@@ -37,6 +40,14 @@ public class EventController {
 	// 의존성이 주입된다.
 	public EventController(EventRepository eventRepository) {
 		this.eventRepository = eventRepository;
+	}
+
+	@GetMapping
+	public ResponseEntity queryEvents(Pageable pageable, PagedResourcesAssembler<Event> assembler) {
+		Page<Event> page = this.eventRepository.findAll(pageable);
+		var entityModels = assembler.toModel(page, e -> new EventResource(e));
+		entityModels.add(new Link("/docs/index.html#resource-events-query").withRel("profile"));
+		return ResponseEntity.ok(entityModels);
 	}
 
 	@PostMapping
