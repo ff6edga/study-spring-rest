@@ -74,7 +74,7 @@ public class AccountServiceTest {
 	public void findByUsernameFail_as_RULE() {
 		//expected - 예측 코드를 먼저 작성해야 동작한다. 그래서 expected가 적절한 네이밍
 		String username = "random@email.com";
-		
+
 		expectedException.expect(UsernameNotFoundException.class);
 		expectedException.expectMessage(Matchers.containsString(username));
 
