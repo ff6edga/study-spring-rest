@@ -2,6 +2,7 @@ package study.spring.rest.studyspringrest.events;
 
 import lombok.*;
 import org.springframework.util.StringUtils;
+import study.spring.rest.studyspringrest.accounts.Account;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -30,8 +31,12 @@ public class Event {
 	private int limitOfEnrollment;
 	private boolean offline;
 	private boolean free;
+
 	@Enumerated(EnumType.STRING)
 	private EventStatus eventStatus = EventStatus.DRAFT;
+
+	@ManyToOne
+	private Account manager;
 
 	public void update() {
 		// Update free
