@@ -47,6 +47,7 @@ public class EventController {
 		eventResource.add(new Link("/docs/index.html#resource-get-event").withRel("profile"));
 		return ResponseEntity.ok(eventResource);
 	}
+
 	@GetMapping
 	public ResponseEntity queryEvents(Pageable pageable, PagedResourcesAssembler<Event> assembler) {
 		Page<Event> page = this.eventRepository.findAll(pageable);
@@ -80,6 +81,35 @@ public class EventController {
 		eventResource.add(selfLinkBuilder.withRel("update-event"));
 		eventResource.add(new Link("docs/index.html#resources-events-create").withRel("profile"));
 		return ResponseEntity.created(createdUri).body(eventResource);
+	}
+
+	@PutMapping("/{id}")
+	public ResponseEntity updateEvent(@PathVariable Integer id,
+										@RequestBody @Valid EventDto eventDto,
+										Errors errors) {
+		Optional<Event> optionalEvent = eventRepository.findById(id);
+		if (optionalEvent.isEmpty())
+			return ResponseEntity.notFound().build();
+
+		if (errors.hasErrors()) {
+			return getBadRequest(errors);
+		}
+
+		eventValidator.validate(eventDto, errors);
+
+		if (errors.hasErrors()) {
+			return getBadRequest(errors);
+		}
+
+		// Service 단에서 @Transaction으로 묶어서 처리하지 않고 있으므로
+		// dirty checking되어 자동으로 commit되지 않기 때문에 수동으로 업데이트 한
+		Event existingEvent = optionalEvent.get();
+		modelMapper.map(eventDto, existingEvent);
+		Event updatedEvent = eventRepository.save(existingEvent);
+
+		EventResource eventResource = new EventResource(updatedEvent);
+		eventResource.add(new Link("docs/index.html#resources-events-update").withRel("profile"));
+		return ResponseEntity.ok(eventResource);
 	}
 
 	private ResponseEntity getBadRequest(Errors errors) {
