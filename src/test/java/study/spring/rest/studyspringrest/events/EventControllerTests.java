@@ -1,31 +1,18 @@
 package study.spring.rest.studyspringrest.events;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
-import study.spring.rest.studyspringrest.common.RestDocsConfiguration;
+import study.spring.rest.studyspringrest.common.BaseControllerTest;
 import study.spring.rest.studyspringrest.common.TestDescription;
 
 import java.time.LocalDateTime;
 import java.util.stream.IntStream;
 
-import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
-import static org.springframework.restdocs.headers.HeaderDocumentation.requestHeaders;
-import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
+import static org.springframework.restdocs.headers.HeaderDocumentation.*;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -36,25 +23,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs
-@Import(RestDocsConfiguration.class)
-@ActiveProfiles("test")
-public class EventControllerTests {
-
-	@Autowired
-	MockMvc mockMvc;
-
-	@Autowired
-	ObjectMapper objectMapper;
+public class EventControllerTests extends BaseControllerTest {
 
 	@Autowired
 	EventRepository eventRepository;
-
-	@Autowired
-	ModelMapper modelMapper;
 
 	@Test
 	// 주석보다 나은데?
@@ -266,9 +238,9 @@ public class EventControllerTests {
 		eventDto.setName("Updated Event");
 
 		mockMvc.perform(put("/api/events/{id}", event.getId())
-					.contentType(MediaType.APPLICATION_JSON)
-					.accept(MediaTypes.HAL_JSON)
-					.content(objectMapper.writeValueAsString(eventDto)))
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaTypes.HAL_JSON)
+				.content(objectMapper.writeValueAsString(eventDto)))
 				.andDo(print())
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("name").value(eventDto.getName()))
@@ -287,9 +259,9 @@ public class EventControllerTests {
 
 		//When
 		mockMvc.perform(put("/api/events/{id}", event.getId())
-					.contentType(MediaType.APPLICATION_JSON)
-					.accept(MediaTypes.HAL_JSON)
-					.content(objectMapper.writeValueAsString(eventDto)))
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaTypes.HAL_JSON)
+				.content(objectMapper.writeValueAsString(eventDto)))
 				.andDo(print())
 				.andExpect(status().isBadRequest());
 	}
@@ -305,9 +277,9 @@ public class EventControllerTests {
 
 		//When
 		mockMvc.perform(put("/api/events/{id}", event.getId())
-						.contentType(MediaType.APPLICATION_JSON)
-						.accept(MediaTypes.HAL_JSON)
-						.content(objectMapper.writeValueAsString(eventDto)))
+				.contentType(MediaType.APPLICATION_JSON)
+				.accept(MediaTypes.HAL_JSON)
+				.content(objectMapper.writeValueAsString(eventDto)))
 				.andDo(print())
 				.andExpect(status().isBadRequest());
 	}
