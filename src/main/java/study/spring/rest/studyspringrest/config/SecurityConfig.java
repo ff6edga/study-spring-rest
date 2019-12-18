@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -54,12 +55,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		web.ignoring().requestMatchers(PathRequest.toStaticResources().atCommonLocations());
 	}
 
-	//같은 일을 하지만 상대적으론 Spring Security가 적용되므로 비효율적인 방법이다.
-//	@Override
-//	protected void configure(HttpSecurity http) throws Exception {
-//		//일단 Spring Security는 적용되고 있는 상태다. (Security 안으로 들어와서 Filter chain을 타게 된다)
-//		http.authorizeRequests()
-//				.mvcMatchers("/docs/index.html").anonymous()
-//				.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).anonymous();
-//	}
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		http.anonymous().and() // 익명 사용자를 허용할 것이고
+				.formLogin().and() // 폼 인증을 사용할 것이고
+				.authorizeRequests() // 허용할 요청들은
+					// /api/ 뒤에 모든 GET 요청들이다.
+					.mvcMatchers(HttpMethod.GET, "/api/**").authenticated()
+					// 나머지 요청들은 인증이 필요하다.
+					.anyRequest().authenticated();
+	}
 }
