@@ -30,8 +30,6 @@ public class AuthServerConfigTest extends BaseControllerTest {
 
 	@Before
 	public void setUp() {
-		//예제에 언급되진 않았으나 인메모리 DB의 데이터 공유로
-		//테스트 진행을 위해 설정해야 하는 코드
 		this.accountRepository.deleteAll();
 	}
 
