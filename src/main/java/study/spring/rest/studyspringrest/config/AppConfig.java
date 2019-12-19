@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import study.spring.rest.studyspringrest.accounts.Account;
 import study.spring.rest.studyspringrest.accounts.AccountRole;
 import study.spring.rest.studyspringrest.accounts.AccountService;
+import study.spring.rest.studyspringrest.common.AppProperties;
 
 import java.util.Set;
 
@@ -34,14 +35,24 @@ public class AppConfig {
 			@Autowired
 			AccountService accountService;
 
+			@Autowired
+			AppProperties appProperties;
+
 			@Override
 			public void run(ApplicationArguments args) throws Exception {
-				Account younsoo = Account.builder()
-						.email("younsoo@naver.com")
-						.password("naver")
+				Account admin = Account.builder()
+						.email(appProperties.getAdminUsername())
+						.password(appProperties.getAdminPassword())
 						.roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
 						.build();
-				accountService.saveAccount(younsoo);
+				accountService.saveAccount(admin);
+
+				Account user = Account.builder()
+						.email(appProperties.getUserUsername())
+						.password(appProperties.getUserPassword())
+						.roles(Set.of(AccountRole.USER))
+						.build();
+				accountService.saveAccount(user);
 			}
 		};
 	}

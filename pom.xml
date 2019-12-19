@@ -41,6 +41,13 @@
             <version>2.1.0.RELEASE</version>
         </dependency>
 
+        <!-- @ConfigurationProperties 관련 자동완성에 필요 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!--Test Scope Dependencies-->
         <dependency>
             <groupId>org.springframework.security</groupId>

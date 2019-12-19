@@ -14,6 +14,7 @@ import study.spring.rest.studyspringrest.accounts.Account;
 import study.spring.rest.studyspringrest.accounts.AccountRepository;
 import study.spring.rest.studyspringrest.accounts.AccountRole;
 import study.spring.rest.studyspringrest.accounts.AccountService;
+import study.spring.rest.studyspringrest.common.AppProperties;
 import study.spring.rest.studyspringrest.common.BaseControllerTest;
 import study.spring.rest.studyspringrest.common.TestDescription;
 
@@ -43,6 +44,9 @@ public class EventControllerTests extends BaseControllerTest {
 
 	@Autowired
 	AccountRepository accountRepository;
+
+	@Autowired
+	AppProperties appProperties;
 
 	@Before
 	public void setUp() {
@@ -147,22 +151,17 @@ public class EventControllerTests extends BaseControllerTest {
 
 	private String getAccessToken() throws Exception {
 		//Given
-		String username = "younsoo@naver.com";
-		String password = "naver";
 		Account younsoo = Account.builder()
-				.email(username)
-				.password(password)
+				.email(appProperties.getUserUsername())
+				.password(appProperties.getUserPassword())
 				.roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
 				.build();
 		accountService.saveAccount(younsoo);
 
-		String clientId = "myApp";
-		String clientSecret = "pass";
-
 		ResultActions perform = mockMvc.perform(MockMvcRequestBuilders.post("/oauth/token")
-				.with(httpBasic(clientId, clientSecret))
-				.param("username", username)
-				.param("password", password)
+				.with(httpBasic(appProperties.getClientId(), appProperties.getClientSecret()))
+				.param("username", appProperties.getUserUsername())
+				.param("password", appProperties.getUserPassword())
 				.param("grant_type", "password"));
 
 		var responseBody = perform.andReturn().getResponse().getContentAsString();

@@ -11,6 +11,7 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import study.spring.rest.studyspringrest.accounts.AccountService;
+import study.spring.rest.studyspringrest.common.AppProperties;
 
 @Configuration
 @EnableAuthorizationServer
@@ -28,6 +29,9 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 	@Autowired
 	TokenStore tokenStore;
 
+	@Autowired
+	AppProperties appProperties;
+
 	@Override
 	public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
 		security.passwordEncoder(passwordEncoder);
@@ -37,10 +41,10 @@ public class AuthServerConfig extends AuthorizationServerConfigurerAdapter {
 	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
 		// 인메모리 상에서 유저를 만드는 임의의 방법
 		clients.inMemory()
-				.withClient("myApp")
+				.withClient(appProperties.getClientId())
 				.authorizedGrantTypes("password", "refresh_token")
 				.scopes("read", "write") // 유저 임의
-				.secret(passwordEncoder.encode("pass"))
+				.secret(passwordEncoder.encode(appProperties.getClientSecret()))
 				.accessTokenValiditySeconds(10 * 60) //10분
 				.refreshTokenValiditySeconds(6 * 10 * 60); //1시간
 	}
