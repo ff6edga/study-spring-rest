@@ -1,8 +1,10 @@
 package study.spring.rest.studyspringrest.events;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
 import org.springframework.util.StringUtils;
 import study.spring.rest.studyspringrest.accounts.Account;
+import study.spring.rest.studyspringrest.accounts.AccountSerializer;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -36,6 +38,7 @@ public class Event {
 	private EventStatus eventStatus = EventStatus.DRAFT;
 
 	@ManyToOne
+	@JsonSerialize(using = AccountSerializer.class)
 	private Account manager;
 
 	public void update() {
