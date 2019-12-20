@@ -145,18 +145,17 @@ public class EventControllerTests extends BaseControllerTest {
 
 	}
 
-	private String getBearerToken() throws Exception {
-		return "Bearer" + getAccessToken();
+	private String getBearerToken(boolean needToCreateAccount) throws Exception {
+		return "Bearer" + getAccessToken(needToCreateAccount);
 	}
 
-	private String getAccessToken() throws Exception {
+	private String getBearerToken() throws Exception {
+		return "Bearer" + getAccessToken(true);
+	}
+	private String getAccessToken(boolean needToCreateAccount) throws Exception {
 		//Given
-		Account younsoo = Account.builder()
-				.email(appProperties.getUserUsername())
-				.password(appProperties.getUserPassword())
-				.roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
-				.build();
-		accountService.saveAccount(younsoo);
+		if (needToCreateAccount)
+			createAccount();
 
 		ResultActions perform = mockMvc.perform(MockMvcRequestBuilders.post("/oauth/token")
 				.with(httpBasic(appProperties.getClientId(), appProperties.getClientSecret()))
@@ -169,6 +168,15 @@ public class EventControllerTests extends BaseControllerTest {
 
 		return jsonParser.parseMap(responseBody).get("access_token").toString();
 
+	}
+
+	private Account createAccount() {
+		Account younsoo = Account.builder()
+				.email(appProperties.getUserUsername())
+				.password(appProperties.getUserPassword())
+				.roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
+				.build();
+		return accountService.saveAccount(younsoo);
 	}
 
 	@Test
@@ -297,7 +305,8 @@ public class EventControllerTests extends BaseControllerTest {
 	@TestDescription("기존의 이벤트를 하나 조회하기")
 	public void getEvent() throws Exception {
 		// Given
-		Event event = this.generateEvent(100);
+		Account account = createAccount();
+		Event event = this.generateEvent(100, account);
 
 		//When & Then
 		mockMvc.perform(get("/api/events/{id}", event.getId()))
@@ -315,12 +324,14 @@ public class EventControllerTests extends BaseControllerTest {
 	@TestDescription("이벤트를 정상적으로 수정하기")
 	public void updateEvent() throws Exception {
 		//Given
-		Event event = this.generateEvent(100);
+		Account account = this.createAccount();
+		Event event = this.generateEvent(100, account);
+
 		EventDto eventDto = modelMapper.map(event, EventDto.class);
 		eventDto.setName("Updated Event");
 
 		mockMvc.perform(put("/api/events/{id}", event.getId())
-				.header(HttpHeaders.AUTHORIZATION, getBearerToken())
+				.header(HttpHeaders.AUTHORIZATION, getBearerToken(false))
 				.contentType(MediaType.APPLICATION_JSON)
 				.accept(MediaTypes.HAL_JSON)
 				.content(objectMapper.writeValueAsString(eventDto)))
@@ -395,23 +406,32 @@ public class EventControllerTests extends BaseControllerTest {
 				.andExpect(status().isNotFound());
 	}
 
-	private Event generateEvent(int index) {
-		Event event = Event.builder()
-				.name("event " + index)
-				.description("Test Event")
-				.beginEnrollmentDateTime(LocalDateTime.of(2019, 12, 8, 2, 2))
-				.closeEnrollmentDateTime(LocalDateTime.of(2019, 12, 9, 2, 2))
-				.beginEventDateTime(LocalDateTime.of(2019, 12, 13, 2, 2))
-				.endEventDateTime(LocalDateTime.of(2019, 12, 14, 2, 2))
-				.basePrice(100)
-				.maxPrice(200)
-				.limitOfEnrollment(100)
-				.location("강남역 D2 스타텁 팩토리")
-				.free(false)
-				.offline(true)
-				.eventStatus(EventStatus.DRAFT)
-				.build();
-
+	private Event generateEvent(int index, Account account) {
+		Event event = buildEvent(index);
+		event.setManager(account);
 		return eventRepository.save(event);
+	}
+
+	private Event generateEvent(int index) {
+		Event event = buildEvent(index);
+		return eventRepository.save(event);
+	}
+
+	private Event buildEvent(int index) {
+		return Event.builder()
+					.name("event " + index)
+					.description("Test Event")
+					.beginEnrollmentDateTime(LocalDateTime.of(2019, 12, 8, 2, 2))
+					.closeEnrollmentDateTime(LocalDateTime.of(2019, 12, 9, 2, 2))
+					.beginEventDateTime(LocalDateTime.of(2019, 12, 13, 2, 2))
+					.endEventDateTime(LocalDateTime.of(2019, 12, 14, 2, 2))
+					.basePrice(100)
+					.maxPrice(200)
+					.limitOfEnrollment(100)
+					.location("강남역 D2 스타텁 팩토리")
+					.free(false)
+					.offline(true)
+					.eventStatus(EventStatus.DRAFT)
+					.build();
 	}
 }
